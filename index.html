@@ -1,0 +1,1485 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aashi Jain world</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#4f46e5",
+              secondary: "#06b6d4",
+            },
+          },
+        },
+      };
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body class="bg-gray-50 text-gray-800 flex flex-col min-h-screen font-sans">
+    <div
+      id="toast"
+      class="hidden fixed bottom-5 right-5 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-xl z-50 transition-all duration-300 flex items-center space-x-2"
+    >
+      <span id="toast-msg"></span>
+    </div>
+
+    <header class="bg-white shadow-md sticky top-0 z-40">
+      <div
+        class="container mx-auto px-4 py-4 flex justify-between items-center"
+      >
+        <a
+          href="#"
+          onclick="switchView('store')"
+          class="flex items-center space-x-2"
+        >
+          <img
+            src="https://ui-avatars.com/api/?name=Aashi+Jain+World&background=4f46e5&color=fff&rounded=true&bold=true"
+            alt="Aashi Jain world Logo"
+            class="h-10 w-auto rounded-full shadow-sm"
+          />
+          <span
+            class="font-bold text-xl text-gray-900 tracking-tight hidden sm:block"
+            >Aashi Jain world</span
+          >
+        </a>
+
+        <nav class="flex items-center space-x-6">
+          <button
+            onclick="switchView('store')"
+            class="hover:text-primary font-medium flex items-center space-x-1"
+          >
+            <i class="fa-solid fa-store"></i> <span>Shop</span>
+          </button>
+          <button
+            onclick="switchView('cart')"
+            class="hover:text-primary font-medium relative flex items-center space-x-1"
+          >
+            <i class="fa-solid fa-cart-shopping"></i> <span>Cart</span>
+            <span
+              id="cart-count"
+              class="absolute -top-2 -right-3 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold"
+              >0</span
+            >
+          </button>
+          <button
+            id="nav-login-btn"
+            onclick="switchView('login')"
+            class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-opacity-90 font-medium"
+          >
+            <i class="fa-solid fa-user"></i>
+            <span id="nav-user-text">Login</span>
+          </button>
+          <button
+            id="nav-admin-btn"
+            onclick="switchView('admin-login')"
+            class="border border-primary text-primary px-4 py-2 rounded-lg hover:bg-indigo-50 font-medium"
+          >
+            <i class="fa-solid fa-lock"></i> Admin Panel
+          </button>
+          <button
+            id="logout-btn"
+            onclick="handleLogout()"
+            class="hidden bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-opacity-90 font-medium"
+          >
+            Logout
+          </button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-8">
+      <section id="view-store" class="space-y-6">
+        <div
+          class="bg-white p-4 rounded-xl shadow-sm flex flex-wrap gap-4 items-center justify-between"
+        >
+          <div class="flex flex-wrap gap-4 items-center">
+            <div>
+              <label
+                class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1"
+                >Category</label
+              >
+              <select
+                id="filter-category"
+                onchange="renderProducts()"
+                class="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-primary focus:outline-none min-w-[150px]"
+              >
+                <option value="all">All Categories</option>
+              </select>
+            </div>
+            <div>
+              <label
+                class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1"
+                >Sort By Price</label
+              >
+              <select
+                id="filter-price"
+                onchange="renderProducts()"
+                class="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-primary focus:outline-none min-w-[150px]"
+              >
+                <option value="default">Default</option>
+                <option value="low-high">Low to High</option>
+                <option value="high-low">High to Low</option>
+              </select>
+            </div>
+          </div>
+          <div class="text-sm text-gray-500" id="product-count-display">
+            Showing all products
+          </div>
+        </div>
+        <div
+          id="product-grid"
+          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+        ></div>
+      </section>
+
+      <section id="view-cart" class="hidden space-y-6">
+        <h2 class="text-3xl font-bold border-b pb-2 text-gray-800">
+          Your Shopping Cart
+        </h2>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div class="lg:col-span-2 space-y-4" id="cart-items-container"></div>
+          <div class="bg-white p-6 rounded-xl shadow-md space-y-6 h-fit">
+            <h3 class="text-xl font-bold border-b pb-2">Checkout Details</h3>
+            <div class="space-y-3">
+              <h4 class="font-semibold text-gray-700">
+                <i class="fa-solid fa-truck"></i> Delivery Details
+              </h4>
+              <input
+                type="text"
+                id="checkout-name"
+                placeholder="Customer Name"
+                class="w-full border p-2 rounded-lg"
+              />
+              <input
+                type="text"
+                id="checkout-phone"
+                placeholder="Mobile Number"
+                class="w-full border p-2 rounded-lg"
+              />
+              <input
+                type="text"
+                id="checkout-flat"
+                placeholder="Flat No. / Building Number"
+                class="w-full border p-2 rounded-lg"
+              />
+              <textarea
+                id="checkout-address"
+                placeholder="Full Address"
+                class="w-full border p-2 rounded-lg rows='2'"
+              ></textarea>
+              <div class="bg-gray-100 p-3 rounded-lg text-xs space-y-2 border">
+                <span class="font-medium text-gray-600"
+                  ><i class="fa-solid fa-location-dot text-red-500"></i> Google
+                  Maps Pin Integration</span
+                >
+                <button
+                  onclick="simulateGeoLocation()"
+                  type="button"
+                  class="w-full bg-white border border-gray-300 py-1 rounded text-gray-700 hover:bg-gray-50 font-medium"
+                >
+                  <i class="fa-solid fa-crosshairs"></i> Fetch Exact Coordinates
+                </button>
+                <input
+                  type="text"
+                  id="checkout-geo"
+                  readonly
+                  placeholder="GPS Coordinates (Not Fetched)"
+                  class="w-full text-center bg-gray-50 text-gray-500 border border-none"
+                />
+              </div>
+            </div>
+            <div class="space-y-2">
+              <label class="block font-semibold text-gray-700"
+                >Apply Coupon</label
+              >
+              <div class="flex space-x-2">
+                <input
+                  type="text"
+                  id="checkout-coupon"
+                  placeholder="Code"
+                  class="w-full border p-2 rounded-lg uppercase"
+                />
+                <button
+                  onclick="applyCoupon()"
+                  class="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-black"
+                >
+                  Apply
+                </button>
+              </div>
+              <p id="coupon-msg" class="text-xs"></p>
+            </div>
+            <div class="space-y-3">
+              <h4 class="font-semibold text-gray-700">
+                <i class="fa-solid fa-credit-card"></i> Payment Method
+              </h4>
+              <div class="flex flex-col space-y-2">
+                <label
+                  class="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
+                >
+                  <input
+                    type="radio"
+                    name="payment"
+                    value="COD"
+                    checked
+                    onchange="toggleUPIField(false)"
+                  />
+                  <div>
+                    <span class="font-semibold block"
+                      >Cash On Delivery (COD)</span
+                    >
+                    <span class="text-xs text-gray-500"
+                      >Admin gets a panel alert instantly</span
+                    >
+                  </div>
+                </label>
+                <label
+                  class="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
+                >
+                  <input
+                    type="radio"
+                    name="payment"
+                    value="UPI"
+                    onchange="toggleUPIField(true)"
+                  />
+                  <div>
+                    <span class="font-semibold block">UPI Payment</span>
+                    <span class="text-xs text-gray-500"
+                      >Triggers WhatsApp Notification on verification</span
+                    >
+                  </div>
+                </label>
+              </div>
+              <div
+                id="upi-config-box"
+                class="hidden bg-indigo-50 border border-indigo-200 p-3 rounded-lg text-sm"
+              >
+                <p class="font-medium text-indigo-900">
+                  Pay to Merchant UPI ID:
+                </p>
+                <p
+                  id="checkout-upi-id"
+                  class="font-bold text-primary tracking-wider text-base"
+                >
+                  aashirajajain@upi
+                </p>
+              </div>
+            </div>
+            <div class="border-t pt-4 space-y-2">
+              <div class="flex justify-between text-gray-600">
+                <span>Subtotal:</span
+                ><span>₹<span id="summary-subtotal">0</span></span>
+              </div>
+              <div class="flex justify-between text-green-600 font-medium">
+                <span>Discount:</span
+                ><span>-₹<span id="summary-discount">0</span></span>
+              </div>
+              <div
+                class="flex justify-between text-xl font-bold text-gray-900 border-t pt-2"
+              >
+                <span>Grand Total:</span
+                ><span>₹<span id="summary-total">0</span></span>
+              </div>
+            </div>
+            <button
+              onclick="placeOrder()"
+              class="w-full bg-primary text-white py-3 rounded-xl hover:bg-opacity-90 font-bold tracking-wide shadow-md transition-all"
+            >
+              PLACE ORDER
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="view-login"
+        class="hidden max-w-md mx-auto bg-white p-8 rounded-xl shadow-md space-y-6"
+      >
+        <div class="text-center">
+          <h2 class="text-2xl font-bold" id="auth-title">
+            User Sign In / Registration
+          </h2>
+          <p class="text-gray-500 text-sm">Access your workspace cleanly</p>
+        </div>
+        <form
+          id="user-auth-form"
+          onsubmit="handleUserAuth(event)"
+          class="space-y-4"
+        >
+          <div>
+            <label class="block text-sm font-medium mb-1"
+              >Full Name (Only required for creation)</label
+            ><input
+              type="text"
+              id="auth-name"
+              placeholder="John Doe"
+              class="w-full border p-2 rounded-lg"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Email Address</label
+            ><input
+              type="email"
+              id="auth-email"
+              required
+              placeholder="john@example.com"
+              class="w-full border p-2 rounded-lg"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Mobile Number</label
+            ><input
+              type="tel"
+              id="auth-mobile"
+              required
+              placeholder="9876543210"
+              class="w-full border p-2 rounded-lg"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Password</label
+            ><input
+              type="password"
+              id="auth-password"
+              required
+              placeholder="••••••••"
+              class="w-full border p-2 rounded-lg"
+            />
+          </div>
+          <div class="grid grid-cols-2 gap-4 pt-2">
+            <button
+              type="submit"
+              name="action"
+              value="login"
+              class="w-full bg-primary text-white py-2 rounded-lg font-medium hover:bg-opacity-90"
+            >
+              Login
+            </button>
+            <button
+              type="submit"
+              name="action"
+              value="register"
+              class="w-full bg-gray-200 text-gray-800 py-2 rounded-lg font-medium hover:bg-gray-300"
+            >
+              Create User
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section
+        id="view-admin-login"
+        class="hidden max-w-md mx-auto bg-white p-8 rounded-xl shadow-md space-y-6"
+      >
+        <div class="text-center">
+          <h2 class="text-2xl font-bold">Admin Portal Access</h2>
+          <p class="text-gray-500 text-sm">Enter secure credentials</p>
+        </div>
+        <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Admin Username</label
+            ><input
+              type="text"
+              id="admin-user"
+              required
+              placeholder="Username"
+              class="w-full border p-2 rounded-lg"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Password</label
+            ><input
+              type="password"
+              id="admin-pass"
+              required
+              placeholder="••••••••"
+              class="w-full border p-2 rounded-lg"
+            />
+          </div>
+          <button
+            type="submit"
+            class="w-full bg-gray-900 text-white py-2 rounded-lg font-medium hover:bg-black"
+          >
+            Authorize
+          </button>
+        </form>
+      </section>
+
+      <section id="view-admin-dashboard" class="hidden space-y-8">
+        <div class="flex justify-between items-center border-b pb-4">
+          <div>
+            <h2 class="text-3xl font-bold tracking-tight text-gray-900">
+              Admin Command Center
+            </h2>
+            <p class="text-sm text-gray-500">
+              Live operational data & controls
+            </p>
+          </div>
+          <div class="flex items-center space-x-3">
+            <span
+              class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider"
+              >Session Active</span
+            >
+            <button
+              onclick="switchView('store')"
+              class="text-sm bg-gray-100 px-3 py-2 rounded-lg border hover:bg-gray-200"
+            >
+              Exit Admin
+            </button>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div class="flex space-x-4 border-b">
+            <button
+              onclick="changeStatsPeriod('daily')"
+              id="tab-daily"
+              class="py-2 px-4 border-b-2 border-primary font-bold text-primary"
+            >
+              Daily
+            </button>
+            <button
+              onclick="changeStatsPeriod('weekly')"
+              id="tab-weekly"
+              class="py-2 px-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700"
+            >
+              Weekly
+            </button>
+            <button
+              onclick="changeStatsPeriod('monthly')"
+              id="tab-monthly"
+              class="py-2 px-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700"
+            >
+              Monthly
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div
+              class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between"
+            >
+              <div>
+                <p
+                  class="text-sm text-gray-500 font-medium uppercase tracking-wider"
+                >
+                  Gross Sales
+                </p>
+                <h3 class="text-3xl font-bold mt-1" id="stat-sales">₹0</h3>
+              </div>
+              <div
+                class="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xl"
+              >
+                <i class="fa-solid fa-chart-line"></i>
+              </div>
+            </div>
+            <div
+              class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between"
+            >
+              <div>
+                <p
+                  class="text-sm text-gray-500 font-medium uppercase tracking-wider"
+                >
+                  Net Revenue
+                </p>
+                <h3 class="text-3xl font-bold mt-1" id="stat-revenue">₹0</h3>
+              </div>
+              <div
+                class="w-12 h-12 rounded-full bg-green-50 text-green-600 flex items-center justify-center text-xl"
+              >
+                <i class="fa-solid fa-wallet"></i>
+              </div>
+            </div>
+            <div
+              class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between"
+            >
+              <div>
+                <p
+                  class="text-sm text-gray-500 font-medium uppercase tracking-wider"
+                >
+                  Net Profit
+                </p>
+                <h3 class="text-3xl font-bold mt-1" id="stat-profit">₹0</h3>
+              </div>
+              <div
+                class="w-12 h-12 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center text-xl"
+              >
+                <i class="fa-solid fa-gavel"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div class="bg-white p-6 rounded-xl shadow-md border space-y-4">
+            <h3 class="text-xl font-bold text-gray-800 border-b pb-2">
+              <i class="fa-solid fa-box-open text-indigo-600"></i> Product
+              Management
+            </h3>
+            <form
+              onsubmit="handleCreateProduct(event)"
+              class="grid grid-cols-2 gap-3 bg-gray-50 p-3 rounded-lg border"
+            >
+              <input
+                type="text"
+                id="p-name"
+                placeholder="Product Name"
+                required
+                class="border p-2 rounded text-sm col-span-2"
+              />
+              <input
+                type="text"
+                id="p-category"
+                placeholder="Category"
+                required
+                class="border p-2 rounded text-sm col-span-2"
+              />
+              <input
+                type="number"
+                id="p-price"
+                placeholder="MRP Price (₹)"
+                required
+                class="border p-2 rounded text-sm"
+              />
+              <input
+                type="number"
+                id="p-cost"
+                placeholder="Cost Price (₹)"
+                required
+                class="border p-2 rounded text-sm"
+              />
+              <input
+                type="number"
+                id="p-qty"
+                placeholder="Quantity Available"
+                required
+                class="border p-2 rounded text-sm col-span-2"
+              />
+              <div class="col-span-2 border p-2 rounded bg-white space-y-2">
+                <label class="block text-xs font-semibold text-gray-500"
+                  >Product Image (Provide Link OR Upload File)</label
+                >
+                <input
+                  type="text"
+                  id="p-image"
+                  placeholder="Image URL (Link)"
+                  class="w-full border p-2 rounded text-sm"
+                />
+                <div
+                  class="text-center text-xs text-gray-400 font-bold uppercase"
+                >
+                  OR
+                </div>
+                <input
+                  type="file"
+                  id="p-image-file"
+                  accept="image/*"
+                  class="w-full border p-2 rounded text-sm"
+                />
+              </div>
+              <button
+                type="submit"
+                class="col-span-2 bg-indigo-600 text-white py-2 rounded font-medium text-sm hover:bg-indigo-700"
+              >
+                Add New Product Block
+              </button>
+            </form>
+            <div class="max-h-60 overflow-y-auto border rounded-lg">
+              <table class="w-full text-left text-xs text-gray-600">
+                <thead class="bg-gray-100 text-gray-700 sticky top-0">
+                  <tr>
+                    <th class="p-2">Product Details</th>
+                    <th class="p-2">Price/Cost</th>
+                    <th class="p-2">Stock</th>
+                    <th class="p-2 text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="table-admin-products"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="bg-white p-6 rounded-xl shadow-md border space-y-4">
+            <h3 class="text-xl font-bold text-gray-800 border-b pb-2">
+              <i class="fa-solid fa-users-gear text-cyan-600"></i> Identity
+              Access
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="space-y-2 border p-3 rounded-lg bg-gray-50">
+                <span class="text-xs font-bold text-gray-700 block uppercase"
+                  >Create Standard User</span
+                >
+                <form onsubmit="handleAdminCreateUser(event)" class="space-y-2">
+                  <input
+                    type="text"
+                    id="admin-u-name"
+                    placeholder="Name"
+                    required
+                    class="w-full border p-1 rounded text-xs"
+                  />
+                  <input
+                    type="email"
+                    id="admin-u-email"
+                    placeholder="Email"
+                    required
+                    class="w-full border p-1 rounded text-xs"
+                  />
+                  <input
+                    type="tel"
+                    id="admin-u-phone"
+                    placeholder="Mobile"
+                    required
+                    class="w-full border p-1 rounded text-xs"
+                  />
+                  <input
+                    type="password"
+                    id="admin-u-pass"
+                    placeholder="Password"
+                    required
+                    class="w-full border p-1 rounded text-xs"
+                  />
+                  <button
+                    type="submit"
+                    class="w-full bg-cyan-600 text-white py-1 rounded text-xs font-bold hover:bg-cyan-700"
+                  >
+                    Save User
+                  </button>
+                </form>
+              </div>
+              <div class="space-y-2 border p-3 rounded-lg bg-gray-50">
+                <span class="text-xs font-bold text-gray-700 block uppercase"
+                  >Create System Admin</span
+                >
+                <form
+                  onsubmit="handleAdminCreateAdmin(event)"
+                  class="space-y-2"
+                >
+                  <input
+                    type="text"
+                    id="admin-a-user"
+                    placeholder="Admin User"
+                    required
+                    class="w-full border p-1 rounded text-xs"
+                  />
+                  <input
+                    type="password"
+                    id="admin-a-pass"
+                    placeholder="Password"
+                    required
+                    class="w-full border p-1 rounded text-xs"
+                  />
+                  <button
+                    type="submit"
+                    class="w-full bg-gray-800 text-white py-1 rounded text-xs font-bold hover:bg-black"
+                  >
+                    Save Admin
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="bg-white p-6 rounded-xl shadow-md border space-y-4 lg:col-span-2"
+          >
+            <h3 class="text-xl font-bold text-gray-800 border-b pb-2">
+              <i class="fa-solid fa-file-invoice text-blue-600"></i> Fetch
+              Invoice by Order ID
+            </h3>
+            <div class="flex space-x-2">
+              <input
+                type="text"
+                id="fetch-invoice-id"
+                placeholder="Enter Order ID (e.g. ORD-123456)"
+                class="border p-2 rounded text-sm w-full"
+              />
+              <button
+                onclick="fetchInvoiceAdmin()"
+                class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-blue-700 transition"
+              >
+                Fetch
+              </button>
+            </div>
+            <div
+              id="fetched-invoice-display"
+              class="hidden border p-4 rounded-lg bg-gray-50 mt-4 transition-all"
+            ></div>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-md border space-y-4">
+          <div
+            class="flex flex-col sm:flex-row justify-between sm:items-center border-b pb-4 gap-4"
+          >
+            <h3 class="text-2xl font-bold text-gray-900">
+              <i class="fa-solid fa-receipt text-emerald-600"></i> Central
+              Dispatch Pipeline (Order Details)
+            </h3>
+            <div class="flex space-x-2 items-center">
+              <select
+                id="admin-order-filter"
+                onchange="renderAdminPanel()"
+                class="border border-gray-300 p-1.5 rounded-lg text-xs font-medium focus:ring-primary focus:outline-none bg-white shadow-sm"
+              >
+                <option value="all">All Records (Random Days)</option>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+              <button
+                onclick="downloadCSV()"
+                class="bg-green-700 text-white px-4 py-1.5 rounded-lg text-xs hover:bg-green-800 shadow-sm transition"
+              >
+                <i class="fa-solid fa-file-csv"></i> Export CSV
+              </button>
+            </div>
+          </div>
+          <div class="overflow-x-auto border rounded-xl">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead
+                class="bg-gray-900 text-white text-xs uppercase tracking-wider"
+              >
+                <tr>
+                  <th class="p-3">Day / Token</th>
+                  <th class="p-3">Customer Meta Info</th>
+                  <th class="p-3">Products Ordered</th>
+                  <th class="p-3">Financials</th>
+                  <th class="p-3 text-center">Admin Actions</th>
+                </tr>
+              </thead>
+              <tbody
+                id="table-admin-orders"
+                class="divide-y divide-gray-200 bg-white"
+              ></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="view-invoice"
+        class="hidden max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-xl border border-gray-200 my-8 space-y-6"
+      ></section>
+    </main>
+
+    <footer
+      class="bg-gray-900 text-gray-400 py-6 text-center text-sm border-t border-gray-800"
+    >
+      <div class="container mx-auto px-4 space-y-1">
+        <p class="text-white font-medium">Aashi Jain world</p>
+        <p>A unit of Aghora innovation & copyright reserved &copy; 2026</p>
+      </div>
+    </footer>
+
+    <script>
+      // CORE PERSISTED DATABASES STATE
+      let products = [
+        {
+          id: 101,
+          name: "Premium Velvet Jewelry Organizer Box",
+          price: 1499,
+          cost: 900,
+          category: "Luxury",
+          qty: 24,
+          img: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&auto=format&fit=crop&q=60",
+        },
+        {
+          id: 102,
+          name: "Handcrafted Ceramic Aroma Diffuser Set",
+          price: 899,
+          cost: 450,
+          category: "Home Decor",
+          qty: 40,
+          img: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=500&auto=format&fit=crop&q=60",
+        },
+        {
+          id: 103,
+          name: "Designer Minimalist Quartz Wristwatch",
+          price: 3499,
+          cost: 2100,
+          category: "Accessories",
+          qty: 12,
+          img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&auto=format&fit=crop&q=60",
+        },
+        {
+          id: 104,
+          name: "Organic Botanical Essential Oil Kit",
+          price: 1250,
+          cost: 600,
+          category: "Wellness",
+          qty: 35,
+          img: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=500&auto=format&fit=crop&q=60",
+        },
+      ];
+      let users = [
+        {
+          id: 1,
+          name: "Rajesh Kumar",
+          email: "rajesh@gmail.com",
+          mobile: "9876543210",
+          pass: "user123",
+        },
+      ];
+      let admins = [{ user: "AashiRajajain", pass: "Raashijain" }];
+      let coupons = [{ code: "WELCOME10", pct: 10 }];
+
+      let orders = []; // Emptied - zero stats until first transaction
+      let cart = [];
+      let activeUser = null;
+      let isAdminAuthenticated = false;
+      let globalUPI = "aashirajajain@upi";
+      let activeStatsPeriod = "daily";
+      let appliedCouponRate = 0;
+      let adminMobileConfig = "9876543210";
+
+      window.addEventListener("DOMContentLoaded", () => {
+        initializeCategories();
+        renderProducts();
+        updateCartCounter();
+      });
+
+      function switchView(viewId) {
+        document.getElementById("view-store").classList.add("hidden");
+        document.getElementById("view-cart").classList.add("hidden");
+        document.getElementById("view-login").classList.add("hidden");
+        document.getElementById("view-admin-login").classList.add("hidden");
+        document.getElementById("view-admin-dashboard").classList.add("hidden");
+        document.getElementById("view-invoice").classList.add("hidden");
+
+        if (viewId === "store") {
+          document.getElementById("view-store").classList.remove("hidden");
+          renderProducts();
+        } else if (viewId === "cart") {
+          document.getElementById("view-cart").classList.remove("hidden");
+          renderCart();
+        } else if (viewId === "login") {
+          document.getElementById("view-login").classList.remove("hidden");
+        } else if (viewId === "admin-login") {
+          if (isAdminAuthenticated) {
+            document
+              .getElementById("view-admin-dashboard")
+              .classList.remove("hidden");
+            renderAdminPanel();
+          } else {
+            document
+              .getElementById("view-admin-login")
+              .classList.remove("hidden");
+          }
+        } else if (viewId === "admin-dashboard") {
+          document
+            .getElementById("view-admin-dashboard")
+            .classList.remove("hidden");
+          renderAdminPanel();
+        } else if (viewId === "invoice") {
+          document.getElementById("view-invoice").classList.remove("hidden");
+        }
+        window.scrollTo(0, 0);
+      }
+
+      function showNotification(msg) {
+        const toast = document.getElementById("toast");
+        document.getElementById("toast-msg").innerText = msg;
+        toast.classList.remove("hidden");
+        setTimeout(() => toast.classList.add("hidden"), 4000);
+      }
+
+      // Timeframe Helper Function
+      function isWithinPeriod(dateStr, period) {
+        if (period === "all" || period === "random") return true;
+        const orderDate = new Date(dateStr);
+        const now = new Date();
+        const diffTime = Math.abs(now - orderDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (period === "daily") return diffDays <= 1;
+        if (period === "weekly") return diffDays <= 7;
+        if (period === "monthly") return diffDays <= 30;
+        return true;
+      }
+
+      function initializeCategories() {
+        const select = document.getElementById("filter-category");
+        const uniqueCategories = [...new Set(products.map((p) => p.category))];
+        select.innerHTML = '<option value="all">All Categories</option>';
+        uniqueCategories.forEach(
+          (cat) =>
+            (select.innerHTML += `<option value="${cat}">${cat}</option>`),
+        );
+      }
+
+      function renderProducts() {
+        const catFilter = document.getElementById("filter-category").value;
+        const priceFilter = document.getElementById("filter-price").value;
+        const grid = document.getElementById("product-grid");
+
+        let filtered = [...products];
+        if (catFilter !== "all")
+          filtered = filtered.filter((p) => p.category === catFilter);
+        if (priceFilter === "low-high")
+          filtered.sort((a, b) => a.price - b.price);
+        else if (priceFilter === "high-low")
+          filtered.sort((a, b) => b.price - a.price);
+
+        document.getElementById("product-count-display").innerText =
+          `Displaying ${filtered.length} curated product blocks`;
+        grid.innerHTML = "";
+        if (filtered.length === 0) {
+          grid.innerHTML = `<div class='col-span-full text-center py-12 text-gray-400 font-medium'>No products items matched the search criteria.</div>`;
+          return;
+        }
+
+        filtered.forEach((p) => {
+          const imgUrl =
+            p.img ||
+            "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=500&auto=format&fit=crop&q=60";
+          grid.innerHTML += `
+            <div class="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden group">
+                <div class="relative overflow-hidden aspect-square bg-gray-50">
+                    <img src="${imgUrl}" alt="${p.name}" class="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-500">
+                    <span class="absolute top-2 right-2 bg-gray-900 text-white text-[10px] uppercase font-bold tracking-widest px-2 py-1 rounded">${p.category}</span>
+                </div>
+                <div class="p-4 flex flex-col flex-grow space-y-3">
+                    <h3 class="font-bold text-gray-800 text-base leading-snug line-clamp-2 flex-grow">${p.name}</h3>
+                    <div class="flex items-baseline justify-between">
+                        <span class="text-xl font-black text-gray-900">₹${p.price}</span>
+                        <span class="text-xs ${p.qty > 0 ? "text-green-600 font-medium" : "text-red-500 font-bold"}">${p.qty > 0 ? `Stock: ${p.qty}` : "Out of Stock"}</span>
+                    </div>
+                    <div class="pt-1">
+                        <button onclick="addToCart(${p.id})" ${p.qty <= 0 ? "disabled" : ""} class="w-full bg-primary text-white text-sm font-bold py-2.5 rounded-xl hover:bg-opacity-90 disabled:bg-gray-200 disabled:text-gray-400 tracking-wide transition-colors">
+                            <i class="fa-solid fa-cart-plus mr-1"></i> ADD TO CART
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+        });
+      }
+
+      function addToCart(id) {
+        const prod = products.find((p) => p.id === id);
+        if (!prod) return;
+        const existing = cart.find((item) => item.id === id);
+        if (existing) {
+          if (existing.selectedQty < prod.qty) {
+            existing.selectedQty++;
+            showNotification(`Incremented item count`);
+          } else showNotification(`Maximum stock reached.`);
+        } else {
+          cart.push({ ...prod, selectedQty: 1 });
+          showNotification(`Added ${prod.name} successfully`);
+        }
+        updateCartCounter();
+      }
+
+      function updateCartCounter() {
+        document.getElementById("cart-count").innerText = cart.reduce(
+          (acc, curr) => acc + curr.selectedQty,
+          0,
+        );
+      }
+
+      function alterCartQty(id, amt) {
+        const target = cart.find((item) => item.id === id);
+        if (!target) return;
+        const originalProd = products.find((p) => p.id === id);
+        target.selectedQty += amt;
+        if (target.selectedQty > originalProd.qty)
+          target.selectedQty = originalProd.qty;
+        if (target.selectedQty <= 0)
+          cart = cart.filter((item) => item.id !== id);
+        updateCartCounter();
+        renderCart();
+      }
+
+      function renderCart() {
+        const container = document.getElementById("cart-items-container");
+        if (cart.length === 0) {
+          container.innerHTML = `
+            <div class="bg-white p-8 rounded-2xl text-center shadow-sm space-y-4">
+                <i class="fa-solid fa-basket-shopping text-4xl text-gray-300"></i>
+                <p class="text-gray-500 font-medium">Your current cart array context is completely empty.</p>
+                <button onclick="switchView('store')" class="bg-primary text-white text-sm px-4 py-2 rounded-lg font-bold">Continue Shopping</button>
+            </div>`;
+          calculateCartTotals();
+          return;
+        }
+        container.innerHTML = "";
+        cart.forEach((item) => {
+          container.innerHTML += `
+            <div class="bg-white p-4 rounded-xl shadow-sm border flex items-center space-x-4">
+                <img src="${item.img}" class="w-16 h-16 object-cover rounded-lg bg-gray-100 flex-shrink-0">
+                <div class="flex-grow min-w-0">
+                    <h4 class="font-bold text-gray-800 text-sm truncate">${item.name}</h4>
+                    <span class="text-sm font-black text-primary block mt-1">₹${item.price}</span>
+                </div>
+                <div class="flex items-center space-x-2 flex-shrink-0">
+                    <button onclick="alterCartQty(${item.id}, -1)" class="w-7 h-7 bg-gray-100 rounded flex font-bold hover:bg-gray-200">-</button>
+                    <span class="w-6 text-center text-sm font-bold">${item.selectedQty}</span>
+                    <button onclick="alterCartQty(${item.id}, 1)" class="w-7 h-7 bg-gray-100 rounded flex font-bold hover:bg-gray-200">+</button>
+                </div>
+            </div>`;
+        });
+        if (activeUser) {
+          document.getElementById("checkout-name").value = activeUser.name;
+          document.getElementById("checkout-phone").value = activeUser.mobile;
+        }
+        calculateCartTotals();
+      }
+
+      function toggleUPIField(show) {
+        document
+          .getElementById("upi-config-box")
+          .classList.toggle("hidden", !show);
+      }
+
+      function applyCoupon() {
+        const input = document
+          .getElementById("checkout-coupon")
+          .value.trim()
+          .toUpperCase();
+        const valid = coupons.find((c) => c.code === input);
+        const msg = document.getElementById("coupon-msg");
+        if (valid) {
+          appliedCouponRate = valid.pct;
+          msg.className = "text-xs text-green-600 font-bold";
+          msg.innerText = `${valid.pct}% Discount applied.`;
+        } else {
+          appliedCouponRate = 0;
+          msg.className = "text-xs text-red-500 font-bold";
+          msg.innerText = "Invalid promotional code.";
+        }
+        calculateCartTotals();
+      }
+
+      function calculateCartTotals() {
+        const subtotal = cart.reduce(
+          (acc, curr) => acc + curr.price * curr.selectedQty,
+          0,
+        );
+        const discount = Math.round(subtotal * (appliedCouponRate / 100));
+        document.getElementById("summary-subtotal").innerText = subtotal;
+        document.getElementById("summary-discount").innerText = discount;
+        document.getElementById("summary-total").innerText =
+          subtotal - discount;
+      }
+
+      function simulateGeoLocation() {
+        document.getElementById("checkout-geo").value =
+          "28.4595° N, 77.0266° E (Verified)";
+      }
+
+      function placeOrder() {
+        if (!activeUser) {
+          showNotification(
+            "Access Denied: You must be logged in to place an order.",
+          );
+          switchView("login");
+          return;
+        }
+        if (cart.length === 0) {
+          showNotification("Empty cart.");
+          return;
+        }
+
+        const name = document.getElementById("checkout-name").value.trim();
+        const phone = document.getElementById("checkout-phone").value.trim();
+        const flat = document.getElementById("checkout-flat").value.trim();
+        const address = document
+          .getElementById("checkout-address")
+          .value.trim();
+        const payment = document.getElementsByName("payment")[0].checked
+          ? "COD"
+          : "UPI";
+
+        if (!name || !phone || !flat || !address) {
+          showNotification("Delivery fields cannot be blank.");
+          return;
+        }
+
+        const total = parseInt(
+          document.getElementById("summary-total").innerText,
+        );
+        const orderToken = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
+        // Use properly formatted ISO string for accurate timestamp calculations
+        const timestamp = new Date().toISOString();
+
+        const totalProfit = cart.reduce(
+          (acc, item) => acc + (item.price - item.cost) * item.selectedQty,
+          0,
+        );
+
+        const orderObj = {
+          id: orderToken,
+          name,
+          mobile: phone,
+          address: `${flat}, ${address}`,
+          items: cart.map((i) => ({
+            name: i.name,
+            qty: i.selectedQty,
+            price: i.price,
+          })),
+          payment,
+          total,
+          profit: totalProfit,
+          timestamp,
+        };
+
+        cart.forEach((item) => {
+          const target = products.find((p) => p.id === item.id);
+          if (target) target.qty = Math.max(0, target.qty - item.selectedQty);
+        });
+
+        orders.unshift(orderObj);
+
+        const waUserText = `Hello ${name}, your order ${orderToken} of ₹${total} is confirmed by Aashi Jain World!`;
+        window.open(
+          `https://wa.me/91${phone}?text=${encodeURIComponent(waUserText)}`,
+          "_blank",
+        );
+
+        const waAdminText = `New Order Placed!\nToken: ${orderToken}\nUser: ${name}\nTotal: ₹${total}\nStrategy: ${payment}`;
+        setTimeout(() => {
+          window.open(
+            `https://wa.me/91${adminMobileConfig}?text=${encodeURIComponent(waAdminText)}`,
+            "_blank",
+          );
+        }, 1000);
+
+        compileLiveInvoiceReceipt(orderObj);
+        cart = [];
+        appliedCouponRate = 0;
+        document.getElementById("checkout-coupon").value = "";
+        document.getElementById("coupon-msg").innerText = "";
+        updateCartCounter();
+        switchView("invoice");
+      }
+
+      function compileLiveInvoiceReceipt(order) {
+        const invoiceSec = document.getElementById("view-invoice");
+        const formattedDate = order.timestamp
+          .replace("T", " ")
+          .substring(0, 16);
+        let itemsRows = order.items
+          .map(
+            (i) =>
+              `<div class="flex justify-between py-1 border-b border-dashed"><span>${i.name} (x${i.qty})</span><span class="font-mono">₹${i.price * i.qty}</span></div>`,
+          )
+          .join("");
+
+        invoiceSec.innerHTML = `
+            <div class="border-4 border-gray-900 p-6 space-y-6">
+                <div class="text-center space-y-1"><h2 class="text-3xl font-black uppercase">Aashi Jain world</h2><p class="text-xs font-bold uppercase">Official Transaction Audit</p></div>
+                <div class="flex justify-between text-xs font-mono bg-gray-100 p-3 rounded">
+                    <div><p><strong>TOKEN:</strong> ${order.id}</p><p><strong>DATETIME:</strong> ${formattedDate}</p></div>
+                    <div class="text-right"><p><strong>STRATEGY:</strong> ${order.payment}</p><p><strong>STATUS:</strong> PROCESSED</p></div>
+                </div>
+                <div class="space-y-2 text-xs">
+                    <h4 class="font-bold border-b uppercase">Billing & Shipping Destination</h4>
+                    <p class="text-sm font-semibold">${order.name}</p><p>+91 ${order.mobile}</p><p>${order.address}</p>
+                </div>
+                <div class="space-y-2"><h4 class="font-bold border-b text-xs uppercase">Line Items Manifest</h4>${itemsRows}</div>
+                <div class="flex justify-between bg-gray-950 text-white p-4 rounded-xl"><span class="font-bold text-sm uppercase">Total Charged:</span><span class="text-2xl font-black">₹${order.total}</span></div>
+                <div class="text-center pt-4"><button onclick="switchView('store')" class="bg-primary text-white text-xs font-bold px-6 py-2.5 rounded-lg uppercase">Return Home</button></div>
+            </div>`;
+      }
+
+      function handleUserAuth(e) {
+        e.preventDefault();
+        const action = document.activeElement.value;
+        const name = document.getElementById("auth-name").value.trim();
+        const email = document.getElementById("auth-email").value.trim();
+        const mobile = document.getElementById("auth-mobile").value.trim();
+        const pass = document.getElementById("auth-password").value;
+
+        if (action === "register") {
+          if (!name) {
+            showNotification("Full registration requires name.");
+            return;
+          }
+          if (users.find((u) => u.email === email || u.mobile === mobile)) {
+            showNotification("Credentials exist.");
+            return;
+          }
+          activeUser = { id: users.length + 1, name, email, mobile, pass };
+          users.push(activeUser);
+          showNotification(`Account initialized for ${name}`);
+        } else {
+          const match = users.find(
+            (u) =>
+              (u.email === email || u.mobile === mobile) && u.pass === pass,
+          );
+          if (!match) {
+            showNotification("Authentication Failed.");
+            return;
+          }
+          activeUser = match;
+          showNotification(`Welcome back, ${match.name}!`);
+        }
+        document.getElementById("nav-user-text").innerText = activeUser.name;
+        document.getElementById("logout-btn").classList.remove("hidden");
+        document.getElementById("nav-login-btn").onclick = null;
+        switchView("store");
+      }
+
+      function handleLogout() {
+        activeUser = null;
+        isAdminAuthenticated = false;
+        document.getElementById("nav-user-text").innerText = "Login";
+        document.getElementById("logout-btn").classList.add("hidden");
+        document.getElementById("nav-login-btn").onclick = () =>
+          switchView("login");
+        switchView("store");
+        showNotification("Logged out.");
+      }
+
+      function handleAdminLogin(e) {
+        e.preventDefault();
+        const user = document.getElementById("admin-user").value;
+        const pass = document.getElementById("admin-pass").value;
+        if (admins.find((a) => a.user === user && a.pass === pass)) {
+          isAdminAuthenticated = true;
+          switchView("admin-dashboard");
+        } else showNotification("Invalid root credentials.");
+      }
+
+      function changeStatsPeriod(period) {
+        activeStatsPeriod = period;
+        ["daily", "weekly", "monthly"].forEach((p) => {
+          document.getElementById(`tab-${p}`).className =
+            p === period
+              ? "py-2 px-4 border-b-2 border-primary font-bold text-primary"
+              : "py-2 px-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700";
+        });
+        updateStatsCounters();
+      }
+
+      // [MODIFIED] Dynamic Transaction Calculation
+      function updateStatsCounters() {
+        if (orders.length === 0) {
+          document.getElementById("stat-sales").innerText = `₹0`;
+          document.getElementById("stat-revenue").innerText = `₹0`;
+          document.getElementById("stat-profit").innerText = `₹0`;
+          return;
+        }
+
+        const filteredOrders = orders.filter((o) =>
+          isWithinPeriod(o.timestamp, activeStatsPeriod),
+        );
+        const computedSales = filteredOrders.reduce(
+          (acc, curr) => acc + curr.total,
+          0,
+        );
+        const computedProfit = filteredOrders.reduce(
+          (acc, curr) => acc + (curr.profit || 0),
+          0,
+        );
+        const computedRevenue = Math.round(computedSales * 0.85); // Maintaining original net rev logic structure (15% platform/tax deduction assumption)
+
+        document.getElementById("stat-sales").innerText = `₹${computedSales}`;
+        document.getElementById("stat-revenue").innerText =
+          `₹${computedRevenue}`;
+        document.getElementById("stat-profit").innerText = `₹${computedProfit}`;
+      }
+
+      function renderAdminPanel() {
+        updateStatsCounters();
+
+        const pTable = document.getElementById("table-admin-products");
+        pTable.innerHTML = "";
+        products.forEach((p) => {
+          pTable.innerHTML += `
+            <tr class="border-b">
+                <td class="p-2 font-medium">${p.name}<br><span class="text-[10px] text-gray-400">${p.category}</span></td>
+                <td class="p-2 font-mono">Sell: ₹${p.price}<br><span class="text-xs text-gray-500">Cost: ₹${p.cost}</span></td>
+                <td class="p-2 font-mono">${p.qty}</td>
+                <td class="p-2 text-center"><button onclick="adminDeleteProduct(${p.id})" class="text-red-600 hover:text-red-900 text-sm"><i class="fa-solid fa-trash-can"></i></button></td>
+            </tr>`;
+        });
+
+        const oTable = document.getElementById("table-admin-orders");
+        oTable.innerHTML = "";
+
+        // [MODIFIED] Pipeline render logic driven by active filter dropdown
+        const filterVal =
+          document.getElementById("admin-order-filter")?.value || "all";
+        const filteredPipelineOrders = orders.filter((o) =>
+          isWithinPeriod(o.timestamp, filterVal),
+        );
+
+        if (filteredPipelineOrders.length === 0) {
+          oTable.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400 text-sm">No recorded transactions for the selected period.</td></tr>`;
+        }
+
+        filteredPipelineOrders.forEach((o) => {
+          const dateSplit = o.timestamp.replace("T", " ").split(" ");
+          let itemsList = o.items
+            .map((i) => `${i.name} (x${i.qty})`)
+            .join(", ");
+          oTable.innerHTML += `
+            <tr class="hover:bg-gray-50 border-b">
+                <td class="p-3"><div class="font-bold bg-gray-100 text-[10px] inline px-1.5 py-0.5 rounded uppercase tracking-wider">${dateSplit[0]}</div><div class="font-mono text-gray-900 mt-1">${o.id}</div></td>
+                <td class="p-3"><div class="font-bold text-gray-800">${o.name}</div><div class="text-[10px] text-gray-400">${o.address}</div></td>
+                <td class="p-3 text-gray-600 max-w-xs truncate text-[11px]">${itemsList}</td>
+                <td class="p-3"><div class="font-mono font-black text-sm">₹${o.total}</div><span class="px-1 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${o.payment === "COD" ? "bg-orange-100 text-orange-800" : "bg-emerald-100 text-emerald-800"}">${o.payment}</span></td>
+                <td class="p-3 text-center space-y-1">
+                    <button onclick="downloadOrderInvoice('${o.id}')" class="block w-full bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-[10px] font-bold transition"><i class="fa-solid fa-download"></i> INVOICE</button>
+                    <button onclick="adminDeleteOrder('${o.id}')" class="block w-full bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded text-[10px] font-bold transition"><i class="fa-solid fa-trash-can"></i> DELETE</button>
+                </td>
+            </tr>`;
+        });
+      }
+
+      function handleCreateProduct(e) {
+        e.preventDefault();
+        const name = document.getElementById("p-name").value.trim();
+        const price = parseInt(document.getElementById("p-price").value);
+        const cost = parseInt(document.getElementById("p-cost").value);
+        const qty = parseInt(document.getElementById("p-qty").value);
+        const category = document.getElementById("p-category").value.trim();
+        const linkImg = document.getElementById("p-image").value.trim();
+        const fileInput = document.getElementById("p-image-file");
+
+        const commitProduct = (imgSrc) => {
+          products.push({
+            id: Date.now(),
+            name,
+            price,
+            cost,
+            qty,
+            category,
+            img:
+              imgSrc ||
+              "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=500&auto=format&fit=crop&q=60",
+          });
+          e.target.reset();
+          initializeCategories();
+          renderAdminPanel();
+          showNotification(`Product: "${name}" created.`);
+        };
+
+        if (fileInput.files && fileInput.files[0]) {
+          const reader = new FileReader();
+          reader.onload = (evt) => commitProduct(evt.target.result);
+          reader.readAsDataURL(fileInput.files[0]);
+        } else {
+          commitProduct(linkImg);
+        }
+      }
+
+      function adminDeleteProduct(id) {
+        products = products.filter((p) => p.id !== id);
+        renderAdminPanel();
+      }
+
+      function adminDeleteOrder(orderId) {
+        orders = orders.filter((o) => o.id !== orderId);
+        renderAdminPanel();
+        showNotification("Order Deleted.");
+      }
+
+      // [NEW] Logic for Fetching Individual Invoices dynamically via ID lookup
+      function fetchInvoiceAdmin() {
+        const fetchId = document
+          .getElementById("fetch-invoice-id")
+          .value.trim();
+        const displayContainer = document.getElementById(
+          "fetched-invoice-display",
+        );
+
+        if (!fetchId) return;
+
+        const targetOrder = orders.find((o) => o.id === fetchId);
+        if (!targetOrder) {
+          displayContainer.classList.remove("hidden");
+          displayContainer.innerHTML = `<p class="text-red-500 text-sm font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Transaction ID not found in system bounds.</p>`;
+          return;
+        }
+
+        displayContainer.classList.remove("hidden");
+        const formattedDate = targetOrder.timestamp
+          .replace("T", " ")
+          .substring(0, 16);
+        displayContainer.innerHTML = `
+           <div class="text-sm space-y-2">
+             <div class="flex justify-between border-b pb-2">
+               <p><strong class="text-gray-500 text-xs uppercase block">Token</strong> ${targetOrder.id}</p>
+               <p class="text-right"><strong class="text-gray-500 text-xs uppercase block">Timeline Date</strong> ${formattedDate}</p>
+             </div>
+             <p><strong>Customer Identity:</strong> ${targetOrder.name} (${targetOrder.mobile})</p>
+             <p><strong>Financial Yield:</strong> ₹${targetOrder.total}</p>
+             <p><strong>Method/Strategy:</strong> <span class="bg-gray-200 px-2 rounded text-xs font-bold">${targetOrder.payment}</span></p>
+             <div class="pt-2">
+               <button onclick="downloadOrderInvoice('${targetOrder.id}')" class="bg-blue-600 text-white px-4 py-2 rounded font-medium hover:bg-blue-700 w-full md:w-auto transition shadow-sm">
+                 <i class="fa-solid fa-cloud-arrow-down"></i> Execute Local Download
+               </button>
+             </div>
+           </div>
+        `;
+      }
+
+      function downloadOrderInvoice(orderId) {
+        const o = orders.find((x) => x.id === orderId);
+        if (!o) return;
+        const formattedDate = o.timestamp.replace("T", " ").substring(0, 16);
+        let content = `AASHI JAIN WORLD - OFFICIAL INVOICE RECORD\n`;
+        content += `===========================================\n`;
+        content += `Order Token: ${o.id}\nDate: ${formattedDate}\nStrategy: ${o.payment}\n\n`;
+        content += `Customer: ${o.name}\nPhone: +91 ${o.mobile}\nAddress: ${o.address}\n\n`;
+        content += `ITEMS AUDIT:\n`;
+        o.items.forEach((i) => {
+          content += `- ${i.name} (x${i.qty}) @ Rs. ${i.price} each\n`;
+        });
+        content += `\nGRAND TOTAL CHARGED: Rs. ${o.total}\n\n`;
+        content += `A unit of Aghora innovation`;
+
+        const blob = new Blob([content], { type: "text/plain" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Invoice_${o.id}.txt`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      // [MODIFIED] CSV Export logic leveraging contextual filters
+      function downloadCSV() {
+        const filterVal =
+          document.getElementById("admin-order-filter")?.value || "all";
+        const filteredOrders = orders.filter((o) =>
+          isWithinPeriod(o.timestamp, filterVal),
+        );
+
+        if (filteredOrders.length === 0) {
+          showNotification("Pipeline dry. No data to export for this period.");
+          return;
+        }
+
+        let csv = "Order ID,Date,Customer,Mobile,Total,Payment,Items\n";
+        filteredOrders.forEach((o) => {
+          const formattedDate = o.timestamp.replace("T", " ").substring(0, 16);
+          const items = o.items.map((i) => `${i.name}(${i.qty})`).join(" | ");
+          // Wrap address / strings with commas in quotes for CSV compliance
+          csv += `"${o.id}","${formattedDate}","${o.name}","${o.mobile}","${o.total}","${o.payment}","${items}"\n`;
+        });
+
+        const blob = new Blob([csv], { type: "text/csv" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Pipeline_Report_${filterVal.toUpperCase()}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      function saveUPIConfig() {
+        globalUPI = document.getElementById("settings-upi-id").value;
+        document.getElementById("checkout-upi-id").innerText = globalUPI;
+        showNotification("Global Operational UPI Address updated.");
+      }
+    </script>
+  </body>
+</html>
